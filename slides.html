@@ -1,0 +1,620 @@
+<!--
+Google IO 2012 HTML5 Slide Template
+
+Authors: Eric Bidelman <ebidel@gmail.com>
+         Luke Mahé <lukem@google.com>
+
+URL: https://code.google.com/p/io-2012-slides
+-->
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Google IO 2012</title>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="chrome=1">
+  <!--<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">-->
+  <!--<meta name="viewport" content="width=device-width, initial-scale=1.0">-->
+  <!--This one seems to work all the time, but really small on ipad-->
+  <!--<meta name="viewport" content="initial-scale=0.4">-->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <link rel="stylesheet" media="all" href="theme/css/default.css">
+  <link rel="stylesheet" media="only screen and (max-device-width: 480px)" href="theme/css/phone.css">
+  <base target="_blank"> <!-- This amazingness opens all links in a new tab. -->
+  <script data-main="js/slides" src="js/require-1.0.8.min.js"></script>
+</head>
+<body style="opacity: 0">
+
+<slides class="layout-widescreen">
+
+  <slide class="logoslide nobackground">
+    <article class="flexbox vcenter hcenter">
+      <span><img src="images/WEB_Medium_WhiteBackground_600x400p.jpeg"></span>
+    </article>
+  </slide>
+
+  <slide class="title-slide segue nobackground">
+    <!-- The content of this hgroup is replaced programmatically through the slide_config.json. -->
+    <hgroup class="auto-fadein">
+      <h1 data-config-title><!-- populated from slide_config.json --></h1>
+      <h2 data-config-subtitle><!-- populated from slide_config.json --></h2>
+      <p data-config-presenter><!-- populated from slide_config.json --></p>
+    </hgroup>
+  </slide>
+
+  <slide>
+    <hgroup>
+      <h2>Rails 3.0 to 3.1</h2>
+    </hgroup>
+  </slide>
+
+  <slide>
+    <hgroup>
+      <h2>Rails 3.0 to 3.1</h2>
+      <h2>Architectural Changes</h2>
+    </hgroup>
+  </slide>
+  
+  <slide>
+    <hgroup>
+      <h2>Rails 3.0 to 3.1</h2>
+      <h2>Architectural Changes</h2>
+    </hgroup>
+    <h3>Asset Pipeline</h3>
+    <article class = "flexbox vcenter">
+      <ul class="build">
+        <li>Assets are fingerprinted (similar to cache_key)</li>
+        <li>Powered by Sprockets and requires server configuration</li>        
+        <li>When assets can and are precompiled Sprockets serves up gziped versions of the compiled files.</li>
+        <li>Header configs set on the server so assets can be cached client-side.</li>
+        <li><b>http://guides.rubyonrails.org/asset_pipeline.html</b></li>
+      </ul>
+    </article>
+  </slide>
+  
+  <slide>
+    <hgroup>
+      <h3>Apache Example</h3>
+    </hgroup>
+    <article>
+      <pre class="prettyprint" data-lang="apache">
+      &lt;LocationMatch "^/assets/.*$"&gt;
+        Header unset ETag
+        FileETag None
+        # RFC says only cache for 1 year
+        ExpiresActive On
+        ExpiresDefault "access plus 1 year"
+      &lt;/LocationMatch&gt;</pre>
+    </article>
+  </slide>
+
+
+  <slide>
+    <hgroup>
+      <h2>Rails 3.0 to 3.1</h2>
+      <h2>Architectural Changes</h3>
+    </hgroup>
+    <article class="smaller">
+    <h3>Streaming</h3>
+    <pre class="prettyprint" data-lang="ruby">
+      #..::ActiveController
+        stream
+      # Or
+      def index 
+        #...
+        render stream: true...
+      end</pre>
+    <p>No 3.1 WebRick support (nginx, unicorn) serves http requests as they are processed. (see railscast)</p>
+
+    <h3>Identity Map</h3>
+    <p>
+    Active Record has an Identity Map in Rails 3.1. An identity map keeps previously instantiated records and returns the object associated with the record if accessed again. The identity map is created on a per-request basis and is flushed at request completion.
+    </p>
+
+    <p>
+    Rails 3.1 comes with the identity map turned <b>off</b> by default.
+    </p>
+
+    </article>
+  </slide>
+
+  <slide>
+    <hgroup>
+      <h2>Rails 3.0 to 3.1</h2>      
+      <h2>Railties</h2>
+    </hgroup>
+    <article>
+       <ul class="build">
+        <li>1.9 compatabile and going forward generators use the 1.9 style hashes</li>
+         <li> 
+          <pre class="prettyprint" data-lang="ruby">
+              :key => 'value'
+              # Becomes
+              key: 'value' 
+          </pre>
+        </li>
+        <li>Scaffold now uses JSON instead of XML</li>
+      </ul>
+    </article>
+  </slide>
+
+  <slide>
+    <hgroup>
+      <h2>Rails 3.0 to 3.1</h2>      
+      <h2>Action Pack</h2>
+    </hgroup>
+    <article>
+       <ul class="build">
+        <li>wrap parameters</li>
+        <li>url_for and named url helpers now accept :subdomain and :domain as options.</li>
+        <li>Controllers support basic http authentication
+          <pre class="prettyprint" data-lang="ruby">
+class PostsController &lt; ApplicationController
+  stream
+  http_basic_authenticate_with :name => "dhh", :password => "secret",
+                               :except => :index
+  #...
+end</pre>
+        </li>
+      </ul>
+    </article>
+  </slide>
+
+  <slide>
+    <hgroup>
+      <h2>Rails 3.0 to 3.1</h2>      
+      <h2>Action Pack</h2>
+    </hgroup>
+    <article class="smaller">
+       <ul class="build">
+        <h3>Active Record</h3>
+        <li>singular relations have block support on creation:</li>
+          <pre class="prettyprint" data-lang="ruby">
+          class User &lt; ActiveRecord::Base
+            has_one :account
+          end
+
+          user.build_account{ |a| a.credit_limit = 100.0 }</pre>
+
+          <li>Added ActiveRecord::Base.attribute_names to return a list of attribute names.</li>
+
+          <li>'roles' built into attr-accessors </li>
+
+          <pre class="prettyprint" data-lang="ruby">
+          class Post &lt; ActiveRecord::Base
+            attr_accessible :title
+            attr_accessible :title, :published_at, :as => :admin
+          end
+
+          Post.new(params[:post], :as => :admin)</pre>
+       </ul>
+    </article>
+  </slide>
+  
+  <slide>
+    <hgroup>
+      <h2>Rails 3.0 to 3.1</h2>      
+      <h2>Action Pack</h2>
+      <h3>Active Record (cont.)
+    </hgroup>
+    <article>
+       <ul class="build">
+        <li>default_scope can now take a block, lambda, or any other object which responds to call for lazy evaluation.</li>
+        <li>Singular associations (has_one, belongs_to) no longer have a proxy and simply returns the associated record or nil.
+          <li>
+          <pre class="prettyprint" data-lang="ruby">
+            bob.mother.create # wrong
+            bob.create_mother # right</pre>
+          </li>
+        </li>
+        <li>Lots of Misc.. migration changes</li>
+       </ul>
+    </article>
+  </slide>
+
+  <slide>
+    <hgroup>
+      <h2>Rails 3.0 to 3.1</h2>      
+      <h2>Action Pack</h2>
+    </hgroup>
+    <article>
+       <ul class="build">
+        <h3>Action View</h3>
+        <li>nothing amazing</li>
+        <h3>Active Model</h3>
+        <li>Added support for selectively enabling and disabling observers.</li>
+
+        <h3>Active Resource</h3>
+        <li>default response format is now JSON from XML.</li>
+
+        <h3>Active Support</h3>
+        <li>Misc. helpers</li>
+       </ul>
+    </article>
+  </slide>
+  
+  <slide>
+    <hgroup>
+      <h2>Rails 3.0 to 3.1</h2>      
+      <h2>Depreciations</h2>
+    </hgroup>
+    <article>
+       <ul class="build">
+        <li><b>ActiveSupport::SecureRandom</b> is deprecated in favor of SecureRandom from the Ruby standard library.</li>
+       </ul>
+    </article>
+  </slide>
+
+  <slide>
+    <hgroup>
+      <h2>Rails 3.1 to 3.2</h2>      
+    </hgroup>
+  </slide>
+
+  <slide>
+    <hgroup>
+      <h2>Rails 3.1 to 3.2</h2>      
+      <h2>Major Features</h2>
+    </hgroup>
+    <article class="smaller">
+       <ul class="build">
+        <li>Better changelogs...</li>
+        <h3>Faster Development Mode &amp; Routing</h3>
+        <li>Rails reloads classes only when files actually change: config.reload_classes_only_on_change</li>
+        <li>Route recognition happens faster</li>
+
+        <h3>Automatic Query Explains</h3>
+        <li><pre>Person.active.limit(5).explain</pre> </li>
+        <li>Queries that take more than half a second to run are automatically explained in the development mode. (configurable)</li>
+
+        <h3> Tagged Logging</h3>
+        <li>stamping log lines with subdomains, request ids, and anything else to aid debugging such applications.</li>
+        <li><pre>config.log_tags</pre></li>
+       </ul>
+    </article>
+  </slide>
+
+  <slide>
+    <hgroup>
+      <h2>Rails 3.1 to 3.2</h2>      
+      <h2>Action Pack</h2>
+    </hgroup>
+    <article class="smaller">
+       <ul class="build">
+          <h3>Action Controller</h3>
+          <li>ActiveSupport::Benchmarkable is now a default module of ActionController:base</li>
+          <h3>Railties</h3>
+          <li>$ rails g scaffold Post title:string:index author:uniq price:decimal{7,2} nil types default to string</li>
+
+          <h3>Action Dispatch</h3>
+          <li>nothing huge</li>
+
+          <h3>Action View</h3>
+          <li>More Misc. helpers for templates.</li>
+          <h3>Miscellaneous</h3>
+          <li>Sprockets added in 3.1 are loggable.</li>
+       </ul>
+    </article>
+  </slide>
+
+  <slide>
+    <hgroup>
+      <h2>Rails 3.1 to 3.2</h2>      
+      <h2>Action Pack</h2>
+    </hgroup>
+    <article class="smaller">
+       <ul class="build">
+
+        <h3>Active Record</h3>
+        <li>'on' | 'ON' casts to true.</li>
+        <li>ActiveRecord::Base.store models can now have key value stores.</li>
+        <li>More chaining on select</li>
+        <li><pre class="prettyprint" data-lang="ruby">
+Client.select('DISTINCT name')  # old 
+Client.select(:name).uniq       # new hotness</pre></li>
+        <li><b>$rake db:drop</b> also drops the test database in order to be symmetric with rake <b>db:create</b></li>
+
+        <li> New Active Relation helpers. "This is a better approach over the old find_or_create_by" future depreciation of find_or.. ?
+        <li><pre class="prettyprint" data-lang="ruby">
+
+User.find_or_create_by_first_name!(:first_name => "Scarlett", :last_name => "Johansson") # old still supported
+User.where(:first_name => "Scarlett").first_or_create!(:last_name => "Johansson") # new better</pre></li>
+        
+        <li>More transaction support and configurability</li>
+       
+       </ul>
+    </article>
+  </slide>
+
+  <slide>
+    <hgroup>
+      <h2>Rails 3.1 to 3.2</h2>      
+      <h2>Action Pack</h2>
+    </hgroup>
+    <article class="smaller">
+       <ul class="build">
+        <h3>Active Model</h3>
+        <li>Nothing huge</li>
+
+        <h3>Active Support</h3>
+        <li>All the logger stuff.</li>
+        <li>Misc. other helpers</li>
+       </ul>
+    </article>
+  </slide>
+
+  <slide>
+    <hgroup>
+      <h2>Rails 3.1 to 3.2</h2>      
+      <h2>Depreciations</h2>
+    </hgroup>
+    <article class="smaller">
+       <ul class="build">
+<li>/vendor : gone</li>
+
+<li>Passing formats or handlers to render :template and friends like render :template => "foo.html.erb" is deprecated. Instead, you can provide :handlers and :formats directly as options:<pre> render :template => "foo", :formats => [:html, :js], :handlers => :erb.</pre></li>
+
+<li>connections in threads are no longer automatically closed.
+<pre class="prettyprint" data-lang="ruby">
+Thread.new { Post.find(1) }.join
+# It should be changed to close the database connection at the end of the thread:
+
+Thread.new {
+ Post.find(1)
+ Post.connection.close
+}.join</pre>
+</li>
+
+       </ul>
+    </article>
+  </slide>
+
+    <slide>
+    <hgroup>
+      <h2>Rails 3.1 to 3.2</h2>      
+      <h2>Depreciations (cont.)</h2>
+    </hgroup>
+    <article class="smaller">
+       <ul class="build">
+<li>
+The set_table_name, set_inheritance_column, set_sequence_name, set_primary_key, set_locking_column methods are deprecated. Use an assignment method instead. For example, instead of set_table_name, use self.table_name=.
+
+<pre class="prettyprint" data-lang="ruby">
+class Project &lt; ActiveRecord::Base
+ self.table_name = "project"
+end
+
+# Or define your own self.table_name method:
+
+class Post &lt; ActiveRecord::Base
+ def self.table_name
+   "special_" + super
+ end
+end
+
+Post.table_name # => "special_posts"
+</pre></li>
+       </ul>
+    </article>
+  </slide>
+
+  <slide>
+    <hgroup>
+      <h2>Rails 3.2 to 4.0 (edge)</h2>      
+    </hgroup>
+  </slide>
+
+  <slide>
+    <hgroup>
+      <h2>Rails 3.2 to 4.0 (edge)</h2>      
+      <h3>Major Features</h3>
+    </hgroup>
+    <article>
+       <ul class="build">
+        <h3>(edge) So I made these up after research</h3>
+        <li>FrameWork changes to help threading</li>
+        <li>Patch and Put both route to update.</li>
+        <li>Routing Concerns</li>
+        <li>New root route <pre class="prettyprint" data-lang="ruby">
+root "home#index"     #can now be written as 
+root to: "home#index" #HUGE</pre></li>
+        <li>Many dependancies removed, rails is becoming more modular (Action Pack decoupled from models for example)</li>
+        <li>Improvements to streaming ActionController::Live</li>
+       </ul>
+    </article>
+  </slide>
+
+  <slide>
+    <hgroup>
+      <h2>Rails 3.2 to 4.0 (edge)</h2>      
+      <h3>Railties</h3>
+    </hgroup>
+    <article>
+       <ul class="build">
+<li>scaffold/model/migration accept a polymorphic modifier for references/belongs_to, for instance</li>
+<pre>rails g model Product supplier:references{polymorphic}</pre>
+<li>Rails:Queue for background tasks (mailing etc)</li>
+       </ul>
+    </article>
+  </slide>
+
+  <slide>
+    <hgroup>
+      <h2>Rails 3.2 to 4.0 (edge)</h2>      
+      <h3>Action Pack</h3>
+    </hgroup>
+    <article>
+       <ul class="build">
+        <h3>Action Mailer</h3>
+        <li>Misc. changes to help support async mailing</li>
+        <h3>Action Controller</h3>
+        <li>lots of Misc. response changes</li>
+        <li>support for custom :flash types (other than :error :notice :warning etc)</li>
+        <h3>Action View</h3>
+        <li>lots of view helpers</li>
+        <h3>Sprockets</h3>
+        <li>pulled out into a gem</li>
+       </ul>
+    </article>
+  </slide>
+
+  <slide>
+    <hgroup>
+      <h2>Rails 3.2 to 4.0 (edge)</h2>      
+      <h3>Action Dispatch</h3>
+    </hgroup>
+    <article>
+       <ul class="build">
+
+<li>routes support unicode characters <pre>get '🔥' => 'home#hot'</pre></li>
+<li>better routing errors.</li>
+<li>routing concerns (add routing for nested elements with concerns versus many of resource do's)</li>
+
+<pre class="prettyprint" data-lang="ruby">
+#routes.rb
+concern :commentable do
+ resources :comments
+end
+
+resources :messages, concerns: :commentable
+resources :posts, concerns: [:commentable, :image_attachable]</pre>
+       </ul>
+    </article>
+  </slide>
+
+  <slide>
+    <hgroup>
+      <h2>Rails 3.2 to 4.0 (edge)</h2>      
+      <h3>Active Record</h3>
+    </hgroup>
+    <article class="smaller">
+       <ul class="build">
+        <li>Nicer HABTM modeling</li>
+        <li>Many PostgreSQL changes</li>
+        <li>More fleshing out of 3.1 Model::Store feature</li>
+        <li>Easier index creation, also with generator support:</li>
+<pre class="prettyprint" data-lang="ruby">
+create_table :messages do |t|       #Before
+  t.references :person
+end
+add_index :messages, :person_id
+#
+create_table :messages do |t|       # After
+  t.references :person, :index => true
+end</pre>
+
+        <li>Added #find_by and #find_by! to mirror the functionality provided by dynamic finders in a way that allows dynamic input more easily:</li>
+<pre class="prettyprint" data-lang="ruby">
+Post.find_by name: 'Spartacus', rating: 4
+Post.find_by "published_at &lt; ?", 2.weeks.ago</pre>
+
+       </ul>
+    </article>
+  </slide>
+
+  <slide>
+    <hgroup>
+      <h2>Rails 3.2 to 4.0 (edge)</h2>      
+      <h3>Active Record (cont.)</h3>
+    </hgroup>
+    <article class="smaller">
+       <ul class="build">
+        <li>Removed IdentityMap... for now</li>
+        <li>Added create_join_table migration helper to create assist comments for HABTM join table migrations.</li>
+
+<pre class="prettyprint" data-lang="ruby">
+create_join_table :products, :categories
+# =>
+# create_table :categories_products, :id => false do |td|
+#   td.integer :product_id, :null => false
+#   td.integer :category_id, :null => false
+# end</pre>
+
+        <li>We might see depreciation warnings in the way we process eager loading, hard to tell from the docs if we will be affected and they basically boil down to: <b>'if you see warnings fix it'</b></li>
+<pre class="prettyprint" data-lang="ruby">
+Post.includes(:comments).where("comments.name = 'foo'") becomes
+Post.includes(:comments).where("comments.name = 'foo'").references(:comments) 'depending'<pre></li>
+       </ul>
+    </article>
+  </slide>
+
+  
+    <slide>
+    <hgroup>
+      <h2>Rails 3.2 to 4.0 (edge)</h2>      
+      <h3>Grab Bag</h3>
+    </hgroup>
+    <article >
+       <ul class="build">
+        <h3>Active Model</h3>
+        <li>Misc.. JSON, and ActiveModel::Model changes</li>
+        <h3>Active Resource</h3>
+        <li><b>Removed</b> is now a gem, on its own release cycle now.</li>
+        <li>Support for PATCH</li>
+        <h3>Active Support</h3>
+        <li>More Hash Time Number and String helpers as always</li>
+       </ul>
+    </article>
+  </slide>
+
+  <slide>
+    <hgroup>
+      <h2>Rails 3.2 to 4.0 (edge)</h2>      
+      <h3>Active Record Depreciations</h3>
+    </hgroup>
+    <article class="smaller">
+       <ul class="build">
+<li><b>MOST</b> 'dynamic_finder' methods: <b>Gone</b></li>
+<pre class="prettyprint" data-lang="ruby">
+find_by_...                 #becomes where() 
+find_last_..!               #becomes where().last
+find_or_create_by_...       #becomes where().first_or_create
+find_or_initialize_by_ ...  #becomes where().first_or_initialize
+scoped_by..                 #becomes where()</pre>
+
+<li>ALL hash based finders: <b>Gone</b></li>
+<pre class="prettyprint" data-lang="ruby">
+Model.find(:all ,:key => 'value',*opts)
+# Becomes
+Model.where(key: 'value').*opts</pre>
+
+<li>Eager-evaluated scopes: <b>Changed</b></li>
+<pre class="prettyprint" data-lang="ruby">
+scope :red, where(color: 'red')
+scope :recent, where(published_at: Time.now - 2.weeks)
+# Becomes (-> => lambda)
+scope :red, -> { where(color: 'red') }
+scope :recent, -> { where(published_at: Time.now - 2.weeks) }
+scope :recent_red, recent.where(color: 'red')  #bonus</pre>
+
+       </ul>
+    </article>
+  </slide>
+
+<!-- end -->
+
+  <slide class="thank-you-slide segue nobackground">
+    <aside class="gdbar right"><img src="images/WILL_Interactive_Logo.png"></aside>
+    <article class="flexbox auto-fadein">
+      <h2>Slides brought to you by google io 2012, and HTML5</h2>
+    </article>
+    <p class="auto-fadein" data-config-contact>
+      <!-- populated from slide_config.json -->
+    </p>
+  </slide>
+
+  <slide class="logoslide dark nobackground">
+    <article class="flexbox vcenter">
+      <span><img src="images/WEB_Medium_WhiteBackground_600x400p.jpeg"></span>
+    </article>
+  </slide>
+
+  <slide class="backdrop"></slide>
+ 
+</slides>
+
+<!--[if IE]>
+  <script src="http://ajax.googleapis.com/ajax/libs/chrome-frame/1/CFInstall.min.js"></script>
+  <script>CFInstall.check({mode: 'overlay'});</script>
+<![endif]-->
+</body>
+</html>
